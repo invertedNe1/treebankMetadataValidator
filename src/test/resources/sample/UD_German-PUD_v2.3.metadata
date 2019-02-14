@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><metadata xmlns="http://www.w3schools.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.w3schools.com MetadataValidatorSchema.xsd">
+  <longname>UD German-PUD</longname>
+  <shortname>UD German-PUD</shortname>
+  <description>This is a part of the Parallel Universal Dependencies (PUD) treebanks created for the [CoNLL 2017 shared task on Multilingual Parsing from Raw Text to Universal Dependencies](http://universaldependencies.org/conll17/).</description>
+  <tkpage>http://universaldependencies.org</tkpage>
+  <infopage>http://universaldependencies.org</infopage>
+  <icon>(none)</icon>
+  <font>Arial</font>
+  <fallback>Sans</fallback>
+  <publish>true</publish>
+  <visible>true</visible>
+  <language>German</language>
+  <license>UD license</license>
+  <version>2.3</version>
+  <hasTokens>true</hasTokens>
+  <hasSentences>true</hasSentences>
+  <abbreviations>
+    <abbreviation>
+      <attribute>lemma</attribute>
+      <description>Lemma</description>
+    </abbreviation>
+  </abbreviations>
+   <showAttributes>
+    <attribute>lemma</attribute>
+    <attribute>newValue</attribute>
+    <attribute>xpos</attribute>
+  </showAttributes>
+  <databases>
+    <database>UD_German-PUD_v2.3</database>
+  </databases>
+</metadata>
