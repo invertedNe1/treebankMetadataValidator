@@ -20,11 +20,7 @@
       <description>Lemma</description>
     </abbreviation>
   </abbreviations>
-   <showAttributes>
-    <attribute>lemma</attribute>
-    <attribute>newValue</attribute>
-    <attribute>xpos</attribute>
-  </showAttributes>
+   <showAttributes>newValue</showAttributes>
   <databases>
     <database>UD_German-PUD_v2.3</database>
   </databases>
