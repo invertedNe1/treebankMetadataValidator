@@ -28,6 +28,14 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+/**
+ * Modifies existing metadata.
+ * Methods to show metadata file content, and to change, add and remove attributes.
+ * Methods for changing and removing are overloaded - either with or without the old content of the attribute.
+ * If multiple attributes with the same name are provided, console will prompt to provide old content (and thus specify
+ * single attribute to change / remove. 
+ *
+ */
 public class MetadataValidation {
 	
 	public ArrayList<File> fileEntries = new ArrayList<File>(); // potential place to store files in a folder.
@@ -60,10 +68,10 @@ public class MetadataValidation {
 	}
 	
 	/**
-	 * Checks if XML in metadata file is well formed. 
+	 * Checks if XML in specific metadata file is well formed. 
 	 */
 	private boolean isWellFormed(File file) throws IOException {
-		File schemaFile = new File("/src/test/resources/sample/MetadataValidatorSchema.xsd");
+		File schemaFile = new File("src/test/resources/sample/MetadataValidatorSchema.xsd");
 		Source xmlFile = new StreamSource(file);
 		SchemaFactory schemaFactory = SchemaFactory
 		    .newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);		
@@ -84,8 +92,14 @@ public class MetadataValidation {
 	}
 	
 	public static void main(String args[]) throws IOException {
+		// check length of args and do tool based on that.
+		// eclipse compile to JAR file
+		if (args.length == 1 && args[0].equals("--help")) {//check first arg isn't name of program
+				System.out.println("helpful message");
+				return;
+		}
 		File testFolder = new File("src/test/resources/sample");
-		File testFile = new File("src/test/resources/sample/UD_English-PUD_v2.3.metadata");
+		File testFile = new File("src/test/resources/sample/UD_German-PUD_v2.3.metadata");
 		File testSchemaFile = new File("src/test/resources/sample/MetadataValidatorSchema.xsd");
 		//again, testing what java is reading as content of file. After checking (+ changing string -2 -> -1), we now know that they contain the expected!
 		MetadataModification modifier = new MetadataModification();
@@ -95,8 +109,11 @@ public class MetadataValidation {
 		assert testFolder.isFile();
 		assert testFile.isFile();
 
-		//MetadataValidation validator = new MetadataValidation(testFile); not working, fails at line 71. 
+		MetadataValidation validator = new MetadataValidation(testFile); // not working, fails at line 71. 
 		
-		modifier.changeAttributeForDirectory(testFile, "metadata showAttributes attribute", "pos", "newValue");		
+		//modifier.changeAttributeForFile(testFile, "language", "testLanguageVal");
+		//modifier.changeAttributeForDirectory(testFile, "metadata showAttributes attribute", "pos", "newValue");
+		//modifier.removeAttributeForFile(testFile, "longname");´
+		//modifier.addAttributeForDirectory(testFolder, "newName", "newContent");
 	}
 }

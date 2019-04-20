@@ -1,60 +1,59 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
 targetNamespace="http://www.example.org/MetadataValidatorSchema" 
 xmlns:tns="http://www.example.org/MetadataValidatorSchema" 
 elementFormDefault="qualified">
-	<xs:element name="metadata">
-    	<xs:complexType>
-      		<xs:sequence>
+	<xsd:element name="metadata">
+    	<xsd:complexType>
+      		<xsd:sequence>
 				<!-- definition of simple elements -->
-				<xs:element name="longname" type="xs:string"/>
-				<xs:element name="shortname" type="xs:string"/>
-				<xs:element name="description" type="xs:string"/>
-				<xs:element name="tkpage" type="xs:string"/>
-				<xs:element name="infopage" type="xs:string"/>
-				<xs:element name="icon" type="xs:string"/>
-				<xs:element name="font" type="xs:string"/>
-				<xs:element name="fallback" type="xs:string"/>
-				<xs:element name="publish" type="xs:boolean"/>
-				<xs:element name="visible" type="xs:boolean"/>
-				<xs:element name="language" type="xs:string"/>
-				<xs:element name="license" type="xs:string"/>
-				<xs:element name="version" type="xs:string"/>
-				<xs:element name="hasTokens" type="xs:boolean"/>
-				<xs:element name="hasSentences" type="xs:boolean"/>
+				<xsd:element name="longname" type="xsd:string"/>
+				<xsd:element name="shortname" type="xsd:string"/>
+				<xsd:element name="description" type="xsd:string"/>
+				<xsd:element name="tkpage" type="xsd:string"/>
+				<xsd:element name="infopage" type="xsd:string"/>
+				<xsd:element name="icon" type="xsd:string"/>
+				<xsd:element name="font" type="xsd:string"/>
+				<xsd:element name="fallback" type="xsd:string"/>
+				<xsd:element name="publish" type="xsd:boolean"/>
+				<xsd:element name="visible" type="xsd:boolean"/>
+				<xsd:element name="language" type="xsd:string"/>
+				<xsd:element name="license" type="xsd:string"/>
+				<xsd:element name="version" type="xsd:string"/>
+				<xsd:element name="hasTokens" type="xsd:boolean"/>
+				<xsd:element name="hasSentences" type="xsd:boolean"/>
 				
 				<!-- restrictions on values. Could potentially apply for some of these? -->
 				<!-- definition of complex elements -->
-				<xs:element name="abbreviations"> <!-- do I want sequence here? -->
-					<xs:complexType>
-						<xs:sequence>
-							<xs:element name="abbreviation">
-								<xs:complexType>
-									<xs:sequence>
-										<xs:element name="attribute" type="xs:string"/>
-										<xs:element name="description" type="xs:string"/>
-									</xs:sequence>
-								</xs:complexType>
-							</xs:element>
-						</xs:sequence>
-					</xs:complexType>
-				</xs:element>
-				<xs:element name="showAttributes">
-					<xs:complexType>
-						<xs:sequence>
-							<xs:element name="attribute" type="xs:string" maxOccurs="unbounded"/>
-						</xs:sequence>
-					</xs:complexType>
-				</xs:element>
-				<xs:element name="databases">
-					<xs:complexType>
-						<xs:sequence>
-							<xs:element name="database" type="xs:string" maxOccurs="unbounded"/>
-						</xs:sequence>
-					</xs:complexType>
-				</xs:element>
+				<xsd:element name="abbreviations"> <!-- do I want sequence here? -->
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="abbreviation">
+								<xsd:complexType>
+									<xsd:sequence>
+										<xsd:element name="attribute" type="xsd:string"/>
+										<xsd:element name="description" type="xsd:string"/>
+									</xsd:sequence>
+								</xsd:complexType>
+							</xsd:element>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="showAttributes">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="attribute" type="xsd:string" maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="databases">
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="database" type="xsd:string" maxOccurs="unbounded"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
 				<!-- invalid comment any and anyAttribute elements -->
-			</xs:sequence>
-    	</xs:complexType>
-	</xs:element>
-</xs:schema>
+			</xsd:sequence>
+    	</xsd:complexType>
+	</xsd:element>
+</xsd:schema>
