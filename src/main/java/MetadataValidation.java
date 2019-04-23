@@ -68,11 +68,20 @@ public class MetadataValidation {
 	}
 	
 	/**
-	 * Checks if XML in specific metadata file is well formed. 
+	 * Checks if XML in specific metadata file (parameter 'file') is well formed.
+	 * Add attributes to metadata node of file before validating. Removes afterwards.
 	 */
 	private boolean isWellFormed(File file) throws IOException {
-		File schemaFile = new File("src/test/resources/sample/MetadataValidatorSchema.xsd");
+		// make changes to metadata node
+		//xmlns="http://www.example.org/MetadataValidatorSchema" 
+		//xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		//xsi:schemaLocation="http://www.w3schools.com/MetadataValidatorSchema metadata.xsd"
+		NodeData changeNodeData = MetadataModification.locateNodeToChange(file, "metadata", "-1");
+		((Element)changeNodeData.node).setAttribute("xmlns", "http://www.example.org/MetadataValidatorSchema");	
+		MetadataModification.transformUpdatedFile(file, changeNodeData.document);
+		
 		Source xmlFile = new StreamSource(file);
+		File schemaFile = new File("src/test/resources/sample/MetadataValidatorSchema.xsd");
 		SchemaFactory schemaFactory = SchemaFactory
 		    .newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);		
 		try {
@@ -80,40 +89,41 @@ public class MetadataValidation {
 		  Validator validator = schema.newValidator();
 		  validator.validate(xmlFile);
 		  System.out.println(xmlFile.getSystemId() + " is valid");
+		  
+		  // remove changes to metadata node
+		  NodeData removeNodeData = MetadataModification.locateNodeToChange(file, "metadata", "-1");
+		  ((Element)removeNodeData.node).removeAttribute("xmlns");
+		  MetadataModification.transformUpdatedFile(file, removeNodeData.document);
 		  return true;
 		} catch (SAXException e) {
 		  System.out.println(xmlFile.getSystemId() + " is NOT valid reason:" + e);
 		} catch (IOException e) {}
+		
+		// remove changes to metadata node - other case
+		NodeData removeNodeData = MetadataModification.locateNodeToChange(file, "metadata", "-1");
+		((Element)changeNodeData.node).removeAttribute("xmlns");
+		MetadataModification.transformUpdatedFile(file, removeNodeData.document);
 		return false;
-		/**
-		 * if not true:
-		 * print specific file name and error
-		 */
 	}
 	
 	public static void main(String args[]) throws IOException {
 		// check length of args and do tool based on that.
 		// eclipse compile to JAR file
-		if (args.length == 1 && args[0].equals("--help")) {//check first arg isn't name of program
+		if (args.length == 1 && args[0].equals("--help")) { //check first arg isn't name of program
 				System.out.println("helpful message");
 				return;
 		}
 		File testFolder = new File("src/test/resources/sample");
-		File testFile = new File("src/test/resources/sample/UD_German-PUD_v2.3.metadata");
+		File testFile = new File("src/test/resources/sample/aUD_German-PUD_v2.3.metadata");
 		File testSchemaFile = new File("src/test/resources/sample/MetadataValidatorSchema.xsd");
-		//again, testing what java is reading as content of file. After checking (+ changing string -2 -> -1), we now know that they contain the expected!
 		MetadataModification modifier = new MetadataModification();
-		modifier.fileToString(testSchemaFile);
-		modifier.fileToString(testFile);
-		assert testSchemaFile.isFile();
-		assert testFolder.isFile();
-		assert testFile.isFile();
 
-		MetadataValidation validator = new MetadataValidation(testFile); // not working, fails at line 71. 
+		//MetadataValidation validator = new MetadataValidation(testFile);
 		
-		//modifier.changeAttributeForFile(testFile, "language", "testLanguageVal");
-		//modifier.changeAttributeForDirectory(testFile, "metadata showAttributes attribute", "pos", "newValue");
-		//modifier.removeAttributeForFile(testFile, "longname");´
+		//modifier.changeAttributeForFile(testFile, "language", "stillGerman");
+		//modifier.changeAttributeForDirectory(testFolder, "abbreviations/abbreviation/attribute", "stillLemma");
+		//modifier.changeAttributeForFile(testFile, "metadata/showAttributes/attribute", "lemma", "newVal");
+		modifier.removeAttributeForFile(testFile, "showAttributes/attribute", "Lemma");
 		//modifier.addAttributeForDirectory(testFolder, "newName", "newContent");
 	}
 }

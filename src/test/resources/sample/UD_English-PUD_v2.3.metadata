@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><metadata xmlns="https://www.w3schools.com">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><metadata>
   <longname>UD English-PUD</longname>
   <shortname>UD English-PUD</shortname>
   <description>This is the English portion of the Parallel Universal Dependencies (PUD) treebanks created for the CoNLL 2017 shared task on Multilingual Parsing from Raw Text to Universal Dependencies (http://universaldependencies.org/conll17/).</description>
@@ -24,4 +24,4 @@
   <databases>
     <database>UD_English-PUD_v2.3</database>
   </databases>
-  <newName>newContent</newName><newName>newContent</newName><newName>newContent</newName><newName>newContent</newName><newName>newContent</newName><newName>newContent</newName><newName>newContent</newName><newName>newContent</newName></metadata>
+</metadata>

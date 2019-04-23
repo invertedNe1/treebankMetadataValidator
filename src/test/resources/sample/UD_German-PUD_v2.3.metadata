@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><metadata xmlns="http://www.example.org/MetadataValidatorSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.w3schools.com/MetadataValidatorSchema metadata.xsd">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><metadata>
   <longname>UD German-PUD</longname>
   <shortname>UD German-PUD</shortname>
   <description>This is a part of the Parallel Universal Dependencies (PUD) treebanks created for the [CoNLL 2017 shared task on Multilingual Parsing from Raw Text to Universal Dependencies](http://universaldependencies.org/conll17/).</description>
