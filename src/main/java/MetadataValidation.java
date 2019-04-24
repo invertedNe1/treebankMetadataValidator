@@ -120,10 +120,11 @@ public class MetadataValidation {
 
 		//MetadataValidation validator = new MetadataValidation(testFile);
 		
-		//modifier.changeAttributeForFile(testFile, "language", "stillGerman");
+		//modifier.changeAttributeForFile(testFile, "showAttributes", "stillGerman");		
 		//modifier.changeAttributeForDirectory(testFolder, "abbreviations/abbreviation/attribute", "stillLemma");
 		//modifier.changeAttributeForFile(testFile, "metadata/showAttributes/attribute", "lemma", "newVal");
-		modifier.removeAttributeForFile(testFile, "showAttributes/attribute", "Lemma");
-		//modifier.addAttributeForDirectory(testFolder, "newName", "newContent");
+		//modifier.removeAttributeForFile(testFile, "showAttributes");
+		//modifier.addAttributeForFile(testFile, "newName", "newContent");
+		modifier.addAttributeAtLocationForFile(testFile, "showAttributes", "fancyName", "niceContent");
 	}
 }
