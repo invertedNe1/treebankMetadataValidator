@@ -107,9 +107,8 @@ public class MetadataValidation {
 	}
 	
 	public static void main(String args[]) throws IOException {
-		// check length of args and do tool based on that.
 		// eclipse compile to JAR file
-		if (args.length == 1 && args[0].equals("--help")) { //check first arg isn't name of program
+		if (args.length == 0 || args.length == 1 && (args[0].equals("--help") || args[0].equals("help"))) { 
 				System.out.println("helpful message");
 				return;
 		}
