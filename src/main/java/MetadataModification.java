@@ -246,6 +246,16 @@ public class MetadataModification {
 		addNode.node.appendChild(((Node)element));
 		transformUpdatedFile(file, addNode.document);		
 	}
+	public void addAttributeAtLocationForDirectory(File file, String pathToNode, String attributeName, String attributeContent) throws FileNotFoundException {
+		if (file.isDirectory()) {
+			for (File fileEntry: file.listFiles()) {
+				if (fileEntry.getName().endsWith(".metadata"))
+					addAttributeAtLocationForFile(file, pathToNode, attributeName, attributeContent);
+			}
+		}
+		else 
+			System.out.println("No directory selected. For modification of a single file, use \"changeAttributeForFile\" method ");
+	}
 	/**
 	 * called by primary methods. locates node to change / remove.
 	 * either @return node to be modified OR store node and doc in class HashMap

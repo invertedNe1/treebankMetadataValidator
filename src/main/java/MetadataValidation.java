@@ -4,29 +4,10 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.*;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import org.xml.sax.SAXException;
 import java.util.ArrayList;
 
-//imports for attribute configuration (could be in another file perhaps)
-//import java.io.File;
-//import java.io.IOException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * Modifies existing metadata.
@@ -72,7 +53,7 @@ public class MetadataValidation {
 	 * Add attributes to metadata node of file before validating. Removes afterwards.
 	 */
 	private boolean isWellFormed(File file) throws IOException {
-		// make changes to metadata node
+		// make changes to metadata node - originally had following 3 attributes, seems to work with just the first.
 		//xmlns="http://www.example.org/MetadataValidatorSchema" 
 		//xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 		//xsi:schemaLocation="http://www.w3schools.com/MetadataValidatorSchema metadata.xsd"
@@ -108,14 +89,124 @@ public class MetadataValidation {
 	
 	public static void main(String args[]) throws IOException {
 		// eclipse compile to JAR file
+		// command line options
+		MetadataModification modifier = new MetadataModification();
 		if (args.length == 0 || args.length == 1 && (args[0].equals("--help") || args[0].equals("help"))) { 
-				System.out.println("helpful message");
-				return;
+				System.out.println("helpful message - details on available methods");
 		}
+		else if (args[0].equals("options") || args[0].equals("--options")) {
+			System.out.println("A list of the available methods of this program. For more details on these methods, use --help or help");
+			System.out.println("print\nvalidate\nchange\nremove\nadd");
+		}
+		// different cases for print command
+		else if (args[1].equals("print")) {
+			if (args.length == 1)
+				System.out.println("this is what print does");
+			else if (args.length > 2)
+				System.out.println("too many arguments");
+			else {
+				File file = new File(args[2]);
+				modifier.fileToString(file);
+			}
+		}
+		// different cases for validate command
+		else if (args[1].equals("validate")) {
+			if (args.length == 1)
+				System.out.println("this is what validate does");
+			if (args.length > 2)
+				System.out.println("too many arguments");
+			else {
+				File file = new File(args[2]);
+				MetadataValidation validator = new MetadataValidation(file);
+			}
+		}
+		// different cases for change command
+		else if (args[1].equals("change")) {
+			if (args.length == 1)
+				System.out.println("this is what change does..");
+			else if (args.length == 4) {
+				File file = new File(args[1]);
+				if (file.isFile())
+					modifier.changeAttributeForFile(file, args[2], args[3]);
+				else if (file.isDirectory())
+					modifier.changeAttributeForDirectory(file, args[2], args[3]);
+			}
+			else if (args.length == 5) {
+				// fleshing out all args (in at least one case) to see what is going on
+				File file = new File(args[1]);
+				String pathToNode = args[2];
+				String newValue = args[3];
+				String oldValue = args[4];
+				if (file.isFile())
+					modifier.changeAttributeForFile(file, args[2], args[3], args[4]);
+				else if (file.isDirectory())
+					modifier.changeAttributeForDirectory(file, args[2], args[3], args[4]);
+			}
+			else if (args.length == 2 || args.length == 3)
+				System.out.println("Not enough arguments\nthis is what change does");
+			else if (args.length > 5)
+				System.out.println("too many arguments\nthis is what change does..");	
+			else // for any other case which I haven't thought of. Is this necessary
+				System.out.println("you did something (else) wrong");
+		}
+		// different cases for remove command
+		else if (args[1].equals("remove")) {
+			if (args.length == 1)
+				System.out.println("this is what remove does..");
+			else if (args.length == 2)
+				System.out.println("Not enough arguments\nThis is what remove does");
+			else if (args.length == 3) {
+				File file = new File(args[1]);
+				if (file.isFile())
+					modifier.removeAttributeForFile(file, args[2]);
+				else if (file.isDirectory())
+					modifier.removeAttributeForDirectory(file, args[2]);
+			}
+			else if (args.length == 4) {
+				File file = new File(args[1]);
+				if (file.isFile())
+					modifier.removeAttributeForFile(file, args[2], args[3]);
+				else if (file.isDirectory())
+					modifier.removeAttributeForDirectory(file, args[2], args[3]);
+			}
+			else if (args.length > 4)
+				System.out.println("too many arguments\nthis is what remove does..");
+		}
+		// different cases for add command
+		else if (args[1].equals("add")) {
+			if (args.length == 1)
+				System.out.println("this is what add does..");
+			else if (args.length == 2 || args.length == 3)
+				System.out.println("Not enough arguments\nThis is what add does");
+			else if (args.length == 4) {
+				// add to root node ("metadata")
+				File file = new File(args[1]);
+				if (file.isFile())
+					modifier.addAttributeForFile(file, args[2], args[3]);
+				else if (file.isDirectory())
+					modifier.addAttributeForDirectory(file, args[2], args[3]);
+			}
+			else if (args.length == 5) {
+				// add at specific location
+				File file = new File(args[1]);
+				if (file.isFile())
+					modifier.addAttributeAtLocationForFile(file, args[2], args[3], args[4]);
+				else if (file.isDirectory())
+					modifier.addAttributeAtLocationForDirectory(file, args[2], args[3], args[4]);
+			}
+			else if (args.length > 5)
+				System.out.println("too many arguments\nthis is what add does..");
+		}
+		// first command is not one of the above cases
+		else {
+			System.out.println("Initial command could not be recognised. Use one of the following commands: print, validate, change, remove, add."
+					+ "\nTo list all options use --options" + "\nFor more details on these use --help");
+		}
+		
+		// self-testing program.
 		File testFolder = new File("src/test/resources/sample");
 		File testFile = new File("src/test/resources/sample/aUD_German-PUD_v2.3.metadata");
 		File testSchemaFile = new File("src/test/resources/sample/MetadataValidatorSchema.xsd");
-		MetadataModification modifier = new MetadataModification();
 
 		//MetadataValidation validator = new MetadataValidation(testFile);
 		
