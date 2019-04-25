@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -20,11 +21,15 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-
-public class MetadataModification {
-	
-	private static HashMap<Node, Document> nodeAndDoc = new HashMap<>();
-	
+/**
+ * Contains methods to change, remove and add nodes to a metadata file
+ * These are all overloaded. change and remove either have or don't have parameter 'oldValue',
+ * which is used to distinguish when multiple nodes have the same name. Add has/doesn't have parameter
+ * 'pathToNode - either adds new node at specific location or at end of file.
+ * Also contains method to return content of a file as a String.
+ * 
+ */
+public class MetadataModification {	
 	/**
 	 *  Turns xml file into string for parsing or printing.
 	 * @return String version of the xml file.
@@ -43,221 +48,214 @@ public class MetadataModification {
 	 * changes first xml mode with name 'pathToNode' for specified file. Overloaded method - no details about old value of node.
 	 * Makes no changes to file in ambiguous case, where multiple nodes have same 'pathToNode' name.
 	 */
-	public void changeAttributeForFile(File file, String pathToNode, String newValue) throws FileNotFoundException {
-		nodeAndDoc.clear();
-		locateNodeToChange(file, pathToNode, "-1"); // if no oldValue specified, call method with "-1"
-		if (nodeAndDoc.size() == 1) {
-			Node node = nodeAndDoc.keySet().iterator().next();
-			if (node.hasChildNodes()) {
-				System.out.println("The node with path \"" + pathToNode + "\" has multiple child nodes. No changes made. "
-						+ "Additionally specify which child node to change.");
-				return;
-			}
-			node.setTextContent(newValue);
-			transformUpdatedFile(file, nodeAndDoc.values().iterator().next());  // write the content into xml file
-		}
-		else if (nodeAndDoc.size() > 1) {
-			System.out.println("More than one node with path \"" + pathToNode + "\" was found in the file: " + file + ".\nNo changes made to file."
-					+ " Additionally specify old value of attribute.");
-		}
-		else if (nodeAndDoc.size() == 0) {
-			System.out.println("No node with path \"" + pathToNode + "\" was found in the file: " + file);
-		}		
-	}
-	/**
-	 * changes first xml node with name 'pathToNode' for each .metadata file in specified directory.
-	 * Overloaded method - no details about content-to-be-removed of node.
-	 * Makes no changes to file in ambiguous case, where multiple nodes have same 'pathToNode' name.
-	 */
-	public void changeAttributeForDirectory(File file, String pathToNode, String newValue) throws FileNotFoundException {
-		if (file.isDirectory()) {
+	public void changeAttribute(File file, String pathToNode, String newValue) throws FileNotFoundException {
+		if (file.isDirectory()) { // call method for individual files in directory
 			for (File fileEntry: file.listFiles()) {
 				if (fileEntry.getName().endsWith(".metadata"))
-					changeAttributeForFile(fileEntry, pathToNode, newValue);
+					changeAttribute(fileEntry, pathToNode, newValue);
 			}
 		}
-		else 
-			System.out.println("No directory selected. For modification of a single file, use \"changeAttributeForFile\" method ");
+		else {
+			NodeData nodeData = locateNodeToChange(file, pathToNode, "-1"); // if no oldValue specified, call method with "-1"
+			if (nodeData.count == 1) {
+				Node node = nodeData.node;
+				// check if node has any child elements
+				boolean hasChildNodes = false;
+				NodeList childNodeList = node.getChildNodes();
+				for (int i = 0; i < childNodeList.getLength(); i++) {
+					Node childNode = childNodeList.item(i);
+					if (childNode.getNodeType() == Node.ELEMENT_NODE)
+						hasChildNodes = true;
+				}
+				if (hasChildNodes) {
+					System.out.println("The node with path \"" + pathToNode + "\" has multiple child nodes. No changes made. "
+							+ "Additionally specify which child node to change.");
+					return;
+				}
+				node.setTextContent(newValue);
+				transformUpdatedFile(file, nodeData.document);  // write the content into xml file
+			}
+			else if (nodeData.count > 1) {
+				System.out.println("More than one node with path \"" + pathToNode + "\" was found in the file: " + file + ".\nNo changes made to file."
+						+ " Additionally specify old value of attribute.");
+			}
+			else if (nodeData.count == 0) {
+				System.out.println("No node with path \"" + pathToNode + "\" was found in the file: " + file);
+			}
+		}
 	}
 	/**
 	 * changes first xml node with name 'pathToNode' for specified file. Overloaded method - provides details about node-to-be-removed
 	 */
-	public void changeAttributeForFile(File file, String pathToNode, String newValue, String oldValue) throws FileNotFoundException {
-		nodeAndDoc.clear();
-		locateNodeToChange(file, pathToNode, oldValue); // refills HashMap 'nodeAndDoc'
-		if (nodeAndDoc.size() == 1) {
-			Node node = nodeAndDoc.keySet().iterator().next();
-			if (node.hasChildNodes()) {
-				System.out.println("The node with path \"" + pathToNode + "\" has multiple child nodes. No changes made. "
-						+ "Additionally specify which child node to change.");
-				return;
-			}
-			node.setTextContent(newValue);
-			transformUpdatedFile(file, nodeAndDoc.values().iterator().next());  // write the content into xml file
-		}
-		else if (nodeAndDoc.size() > 1) {
-			System.out.println("More than one node with path \"" + pathToNode + "\" and oldValue \"" + oldValue + "\" was found in the file: " + file
-					+ ".\nNo changes made to file.");
-		}
-		else if (nodeAndDoc.size() == 0) {
-			System.out.println("No node with path \"" + pathToNode + "\" was found in the file: " + file);
-		}		
-	}
-	/**
-	 * changes first xml node with name 'pathToNode' for each .metadata file in specified directory. 
-	 * Overloaded method - provides details about node-to-be-removed.
-	 */
-	public void changeAttributeForDirectory(File file, String pathToNode, String newValue, String oldValue) throws FileNotFoundException {
+	public void changeAttribute(File file, String pathToNode, String newValue, String oldValue) throws FileNotFoundException {
 		if (file.isDirectory()) {
 			for (File fileEntry: file.listFiles()) {
 				if (fileEntry.getName().endsWith(".metadata"))
-					changeAttributeForFile(fileEntry, pathToNode, oldValue, newValue);
+					changeAttribute(fileEntry, pathToNode, oldValue, newValue);
 			}
 		}
-		else 
-			System.out.println("No directory selected. For modification of a single file, use \"changeAttributeForFile\" method ");
+		else {
+			NodeData nodeData = locateNodeToChange(file, pathToNode, oldValue); // refills HashMap 'nodeAndDoc'
+			if (nodeData.count == 1) {
+				Node node = nodeData.node;
+				// check if node has any child elements
+				boolean hasChildNodes = false;
+				NodeList childNodeList = node.getChildNodes();
+				for (int i = 0; i < childNodeList.getLength(); i++) {
+					Node childNode = childNodeList.item(i);
+					if (childNode.getNodeType() == Node.ELEMENT_NODE)
+						hasChildNodes = true;
+				}
+				if (hasChildNodes) {
+					System.out.println("The node with path \"" + pathToNode + "\" has multiple child nodes. No changes made. "
+							+ "Additionally specify which child node to change.");
+					return;
+				}
+				node.setTextContent(newValue);
+				transformUpdatedFile(file, nodeData.document);  // write the content into xml file
+			}
+			else if (nodeData.count > 1) {
+				System.out.println("More than one node with path \"" + pathToNode + "\" and oldValue \"" + oldValue + "\" was found in the file: " + file
+						+ ".\nNo changes made to file.");
+			}
+			else if (nodeData.count == 0) {
+				System.out.println("No node with path \"" + pathToNode + "\" was found in the file: " + file);
+			}
+		}
 	}
 	/**
 	 * removes first xml node with name 'pathToNode' for specified file. Overloaded method - no details about node-to-be-removed.
 	 * Does not work in ambiguous case, where multiple nodes have same 'pathToNode' name.
 	 */
-	public void removeAttributeForFile(File file, String pathToNode) throws FileNotFoundException {
-		nodeAndDoc.clear();
-		locateNodeToChange(file, pathToNode, "-1"); // refills HashMap 'nodeAndDoc'
-		if (nodeAndDoc.size() == 1) {
-			Node node = nodeAndDoc.keySet().iterator().next();
-			if (node.hasChildNodes()) {
-				System.out.println("The node with path \"" + pathToNode + "\" had multiple child nodes. All were successfully removed");
-			}
-			node.getParentNode().removeChild(node);
-			transformUpdatedFile(file, nodeAndDoc.values().iterator().next());  // write the content into xml file
-		}
-		else if (nodeAndDoc.size() > 1) {
-			System.out.println("More than one node with path \"" + pathToNode + "\" was found in the file: " + file + ".\nNo changes made to file."
-					+ " Additionally specify old value of attribute.");
-			}
-		else if (nodeAndDoc.size() == 0) {
-			System.out.println("no node with path \"" + pathToNode + "\" was found in the file: " + file);
-		}
-	}
-	/**
-	 * removes first xml node with name 'pathToNode' for each .metadata file in specified directory.
-	 * Overloaded method - no details about node-to-be-removed.
-	 * Does not work in ambiguous case, where multiple nodes have same 'pathToNode' name.
-	 */
-	public void removeAttributeForDirectory(File file, String pathToNode) throws FileNotFoundException {
+	public void removeAttribute(File file, String pathToNode) throws FileNotFoundException {
 		if (file.isDirectory()) {
 			for (File fileEntry: file.listFiles()) {
 				if (fileEntry.getName().endsWith(".metadata"))
-					removeAttributeForFile(fileEntry, pathToNode);
+					removeAttribute(fileEntry, pathToNode);
 			}
 		}
-		else 
-			System.out.println("No directory selected. For modification of a single file, use \"removeAttributeForFile\" method ");
+		else{
+			NodeData nodeData = locateNodeToChange(file, pathToNode, "-1"); // refills HashMap 'nodeAndDoc'
+			if (nodeData.count == 1) {
+				Node node = nodeData.node;
+				// check if node has any child elements
+				boolean hasChildNodes = false;
+				NodeList childNodeList = node.getChildNodes();
+				for (int i = 0; i < childNodeList.getLength(); i++) {
+					Node childNode = childNodeList.item(i);
+					if (childNode.getNodeType() == Node.ELEMENT_NODE)
+						hasChildNodes = true;
+				}
+				if (hasChildNodes) {
+					System.out.println("The node with path \"" + pathToNode + "\" had multiple child nodes. All were successfully removed");
+				}
+				node.getParentNode().removeChild(node);
+				transformUpdatedFile(file, nodeData.document);  // write the content into xml file
+			}
+			else if (nodeData.count > 1) {
+				System.out.println("More than one node with path \"" + pathToNode + "\" was found in the file: " + file + ".\nNo changes made to file."
+						+ " Additionally specify old value of attribute.");
+				}
+			else if (nodeData.count == 0) {
+				System.out.println("no node with path \"" + pathToNode + "\" was found in the file: " + file);
+			}
+		}
 	}
 	/**
 	 * removes first xml node with name 'pathToNode' for specified file. Overloaded method - provides details about node-to-be-removed.
 	 */
-	public void removeAttributeForFile(File file, String pathToNode, String oldValue) throws FileNotFoundException {
-		nodeAndDoc.clear();
-		locateNodeToChange(file, pathToNode, oldValue); // refills HashMap 'nodeAndDoc'
-		if (nodeAndDoc.size() == 1) {
-			Node node = nodeAndDoc.keySet().iterator().next();
-			node.getParentNode().removeChild(node);
-			transformUpdatedFile(file, nodeAndDoc.values().iterator().next());  // write the content into xml file
-		}
-		else if (nodeAndDoc.size() > 1) {
-			System.out.println("More than one node with path \"" + pathToNode + "\" and oldValue \"" + oldValue + "\" was found in the file: " + file
-					+ ".\nNo changes made to file.");
-			}
-		else if (nodeAndDoc.size() == 0) {
-			System.out.println("no node with path \"" + pathToNode + "\" and oldValue \"" + oldValue + "\" was found in the file: " + file);
-		}
-	}
-	/**
-	 * removes first xml node with name 'pathToNode' for each .metadata file in specified directory.
-	 * Overloaded method - provides details about node-to-be-removed.
-	 */
-	public void removeAttributeForDirectory(File file, String pathToNode, String oldValue) throws FileNotFoundException {
+	public void removeAttribute(File file, String pathToNode, String oldValue) throws FileNotFoundException {
 		if (file.isDirectory()) {
 			for (File fileEntry: file.listFiles()) {
 				if (fileEntry.getName().endsWith(".metadata"))
-					removeAttributeForFile(fileEntry, pathToNode, oldValue);
+					removeAttribute(fileEntry, pathToNode, oldValue);
 			}
 		}
-		else 
-			System.out.println("No directory selected. For modification of a single file, use \"removeAttributeForFile\" method ");
+		else {
+			NodeData nodeData = locateNodeToChange(file, pathToNode, oldValue); // refills HashMap 'nodeAndDoc'
+			if (nodeData.count == 1) {
+				Node node = nodeData.node;
+				node.getParentNode().removeChild(node);
+				transformUpdatedFile(file, nodeData.document);  // write the content into xml file
+			}
+			else if (nodeData.count > 1) {
+				System.out.println("More than one node with path \"" + pathToNode + "\" and oldValue \"" + oldValue + "\" was found in the file: " + file
+						+ ".\nNo changes made to file.");
+				}
+			else if (nodeData.count == 0) {
+				System.out.println("no node with path \"" + pathToNode + "\" and oldValue \"" + oldValue + "\" was found in the file: " + file);
+			}
+		}
 	}
 	/**
 	 * adds new attribute, as child of 'metadata' node. 
 	 * Attribute has name "attributeName" and content "attributeContent"
+	 * Overloaded method - base case, no specific path provided. Attribute added after last child node of metadata root node.
+	 * Warning: xsd file won't be changed when adding attribute. File that was otherwise well-formed 
+	 * according to MetadataValidation will no longer be so.
 	 */
-	public void addAttributeForFile(File file, String attributeName, String attributeContent) throws FileNotFoundException {
-		try {
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			Document doc = docBuilder.parse(file);
-			
-			Element element = doc.createElement(attributeName);
-			element.appendChild(doc.createTextNode(attributeContent));
-			doc.getFirstChild().appendChild(element);
-			//doc.renameNode(n, null, attributeName);
-			
-			TransformerFactory transformerFactory = TransformerFactory.newInstance();
-			Transformer transformer = transformerFactory.newTransformer();
-			DOMSource source = new DOMSource(doc);
-			StreamResult result = new StreamResult(file);
-			transformer.transform(source, result);
-	
-			System.out.println("File changed : " + file);
-
-	   } catch (TransformerException tfe) {
-			tfe.printStackTrace();
-		} catch (ParserConfigurationException pce) {
-			pce.printStackTrace();
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		} catch (SAXException sae) {
-			sae.printStackTrace();
-		}
-	}
-	/**
-	 * adds new attribute, as child of 'metadata' node, for each file in specified directory
-	 * Attribute has name "attributeName" and content "attributeContent"
-	 */
-	public void addAttributeForDirectory(File file, String attributeName, String attributeContent) throws FileNotFoundException {
+	public void addAttribute(File file, String attributeName, String attributeContent) throws FileNotFoundException {
 		if (file.isDirectory()) {
 			for (File fileEntry: file.listFiles()) {
 				if (fileEntry.getName().endsWith(".metadata"))
-					addAttributeForFile(fileEntry, attributeName, attributeContent);
+					addAttribute(fileEntry, attributeName, attributeContent);
 			}
 		}
-		else 
-			System.out.println("No directory selected. For modification of a single file, use \"addAttributeForFile\" method ");
+		else {
+			try {
+				DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+				Document doc = docBuilder.parse(file);
+				
+				Element element = doc.createElement(attributeName);
+				element.appendChild(doc.createTextNode(attributeContent));
+				doc.getFirstChild().appendChild(element);
+				//doc.renameNode(n, null, attributeName);
+				
+				TransformerFactory transformerFactory = TransformerFactory.newInstance();
+				Transformer transformer = transformerFactory.newTransformer();
+				DOMSource source = new DOMSource(doc);
+				StreamResult result = new StreamResult(file);
+				transformer.transform(source, result);
+		
+				System.out.println("File changed : " + file);
+	
+		   } catch (TransformerException tfe) {
+				tfe.printStackTrace();
+			} catch (ParserConfigurationException pce) {
+				pce.printStackTrace();
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
+			} catch (SAXException sae) {
+				sae.printStackTrace();
+			}
+		}
 	}
 	/**
 	 * adds new attribute as a child node of the node 'pathToNode'.
 	 * Attribute has name 'attributeName' and content 'attributeContent'
+	 * Overloaded method - contains path to where attribute should be added.
+	 * Warning: xsd file won't be changed when adding attribute. File that was otherwise well-formed 
+	 * according to MetadataValidation will no longer be so.
 	 */
-	public void addAttributeAtLocationForFile(File file, String pathToNode, String attributeName, String attributeContent) throws FileNotFoundException{
-		NodeData addNode = locateNodeToChange(file, pathToNode, "-1");
-		Element element = addNode.document.createElement(attributeName);
-		element.appendChild(addNode.document.createTextNode(attributeContent));
-		addNode.node.appendChild(((Node)element));
-		transformUpdatedFile(file, addNode.document);		
-	}
-	public void addAttributeAtLocationForDirectory(File file, String pathToNode, String attributeName, String attributeContent) throws FileNotFoundException {
+	public void addAttributeAtLocation(File file, String attributeName, String attributeContent, String pathToNode) throws FileNotFoundException{
 		if (file.isDirectory()) {
 			for (File fileEntry: file.listFiles()) {
 				if (fileEntry.getName().endsWith(".metadata"))
-					addAttributeAtLocationForFile(file, pathToNode, attributeName, attributeContent);
+					addAttributeAtLocation(file, pathToNode, attributeName, attributeContent);
 			}
 		}
-		else 
-			System.out.println("No directory selected. For modification of a single file, use \"changeAttributeForFile\" method ");
+		else {
+			NodeData addNode = locateNodeToChange(file, pathToNode, "-1");
+			Element element = addNode.document.createElement(attributeName);
+			element.appendChild(addNode.document.createTextNode(attributeContent));
+			addNode.node.appendChild(((Node)element));
+			transformUpdatedFile(file, addNode.document);	
+		}
 	}
 	/**
 	 * called by primary methods. locates node to change / remove.
+	 * if no relevant oldValue is used, method will be called with "-1" for this parameter
 	 * either @return node to be modified OR store node and doc in class HashMap
 	 */
 	static NodeData locateNodeToChange(File file, String pathToNode, String oldValue) throws FileNotFoundException {
@@ -305,17 +303,12 @@ public class MetadataModification {
 								}
 								*/
 								if (node.getTextContent().equals(oldValue)) {
-									//rare case / problem: when multiple nodes have the same oldValue, no change will be made 
-									//solution: don't change count (remains 0). Last node changed.									
-									nodeAndDoc.put(node, doc); //either HashMap or class NodeData
 									nodeData = new NodeData(node, doc, count);
 								}
 							}
 							else { // add each node with name path
 								count += 1;
-								nodeAndDoc.put(node, doc); // either HashMap or other class
 								nodeData = new NodeData(node, doc, count);
-								//current = node; // when pathToNode is longer than one element.
 							}
 						}
 					}
@@ -328,7 +321,6 @@ public class MetadataModification {
 		   } catch (SAXException sae) {
 			sae.printStackTrace();
 		   }
-		// return;
 		return nodeData;
 	}
 	/**
@@ -339,7 +331,6 @@ public class MetadataModification {
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
 			DOMSource source = new DOMSource(doc);
-			//DOMSource source = new DOMSource(nodeAndDoc.values().iterator().next()); //which is the Document doc
 			StreamResult result = new StreamResult(file);
 			transformer.transform(source, result);
 	
@@ -349,5 +340,4 @@ public class MetadataModification {
 			tfe.printStackTrace();
 	   }
 	}
-	
 }	

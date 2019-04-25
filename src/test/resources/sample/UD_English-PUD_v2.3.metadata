@@ -9,7 +9,7 @@
   <fallback>Sans</fallback>
   <publish>true</publish>
   <visible>true</visible>
-  <language>English</language>
+  <language>German</language>
   <license>UD license</license>
   <version>2.3</version>
   <hasTokens>true</hasTokens>
