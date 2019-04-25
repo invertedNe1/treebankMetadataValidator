@@ -89,39 +89,39 @@ public class MetadataValidation {
 	
 	public static void main(String args[]) throws IOException {
 		// eclipse compile to JAR file
-		// command line options
 		MetadataModification modifier = new MetadataModification();
+		// command line options
 		if (args.length == 0 || args.length == 1 && (args[0].equals("--help") || args[0].equals("help"))) { 
 				System.out.println("helpful message - details on available methods");
 		}
 		else if (args[0].equals("options") || args[0].equals("--options")) {
-			System.out.println("A list of the available methods of this program. For more details on these methods, use --help or help");
+			System.out.println("A list of the available commands of this program. For more details on these methods, use --help or help");
 			System.out.println("print\nvalidate\nchange\nremove\nadd");
 		}
 		// different cases for print command
-		else if (args[1].equals("print")) {
+		else if (args[0].equals("print")) {
 			if (args.length == 1)
 				System.out.println("this is what print does");
 			else if (args.length > 2)
 				System.out.println("too many arguments");
 			else {
-				File file = new File(args[2]);
-				modifier.fileToString(file);
+				File file = new File(args[1]);
+				System.out.println(modifier.fileToString(file));
 			}
 		}
 		// different cases for validate command
-		else if (args[1].equals("validate")) {
+		else if (args[0].equals("validate")) {
 			if (args.length == 1)
 				System.out.println("this is what validate does");
 			if (args.length > 2)
 				System.out.println("too many arguments");
 			else {
-				File file = new File(args[2]);
+				File file = new File(args[1]);
 				MetadataValidation validator = new MetadataValidation(file);
 			}
 		}
 		// different cases for change command
-		else if (args[1].equals("change")) {
+		else if (args[0].equals("change")) {
 			if (args.length == 1)
 				System.out.println("this is what change does..");
 			else if (args.length == 4) {
@@ -150,7 +150,7 @@ public class MetadataValidation {
 				System.out.println("you did something (else) wrong");
 		}
 		// different cases for remove command
-		else if (args[1].equals("remove")) {
+		else if (args[0].equals("remove")) {
 			if (args.length == 1)
 				System.out.println("this is what remove does..");
 			else if (args.length == 2)
@@ -173,7 +173,7 @@ public class MetadataValidation {
 				System.out.println("too many arguments\nthis is what remove does..");
 		}
 		// different cases for add command
-		else if (args[1].equals("add")) {
+		else if (args[0].equals("add")) {
 			if (args.length == 1)
 				System.out.println("this is what add does..");
 			else if (args.length == 2 || args.length == 3)
@@ -202,19 +202,19 @@ public class MetadataValidation {
 			System.out.println("Initial command could not be recognised. Use one of the following commands: print, validate, change, remove, add."
 					+ "\nTo list all options use --options" + "\nFor more details on these use --help");
 		}
-		
 		// self-testing program.
-		File testFolder = new File("src/test/resources/sample");
-		File testFile = new File("src/test/resources/sample/aUD_German-PUD_v2.3.metadata");
-		File testSchemaFile = new File("src/test/resources/sample/MetadataValidatorSchema.xsd");
+		//File testFolder = new File("src/test/resources/sample");
+		File testFile = new File("/Users/sam/temprep/treebankMetadataValidator/src/test/resources/sample/aUD_German-PUD_v2.3.metadata");
+		//System.out.println(modifier.fileToString(testFile));
+		//File testSchemaFile = new File("src/test/resources/sample/MetadataValidatorSchema.xsd");
 
 		//MetadataValidation validator = new MetadataValidation(testFile);
 		
-		//modifier.changeAttributeForFile(testFile, "showAttributes", "stillGerman");		
+		modifier.changeAttributeForFile(testFile, "showAttributes", "stillGerman");		
 		//modifier.changeAttributeForDirectory(testFolder, "abbreviations/abbreviation/attribute", "stillLemma");
 		//modifier.changeAttributeForFile(testFile, "metadata/showAttributes/attribute", "lemma", "newVal");
 		//modifier.removeAttributeForFile(testFile, "showAttributes");
 		//modifier.addAttributeForFile(testFile, "newName", "newContent");
-		modifier.addAttributeAtLocationForFile(testFile, "showAttributes", "fancyName", "niceContent");
+		//modifier.addAttributeAtLocationForFile(testFile, "showAttributes", "fancyName", "niceContent");
 	}
 }
